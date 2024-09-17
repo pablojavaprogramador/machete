@@ -31,9 +31,22 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
+    
+    @Column(nullable=true)
+    public boolean enable;
 
     
-   
+
+	public boolean isEnable() {
+		return enable;
+	}
+
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+
+
 	@CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
@@ -46,7 +59,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
-
 
     @Override
     public String getUsername() {

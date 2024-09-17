@@ -1,6 +1,6 @@
 package com.tecnoplacita.machete.service.impl;
 
-import com.tecnoplacita.machete.exceptions.controlados.EmailAlreadyExistsException;
+import com.tecnoplacita.machete.exceptions.EmailAlreadyExistsException;
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.UserRepository;
 import com.tecnoplacita.machete.service.UserService;
