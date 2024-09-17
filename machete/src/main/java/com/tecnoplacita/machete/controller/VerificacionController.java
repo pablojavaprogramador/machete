@@ -38,7 +38,7 @@ public class VerificacionController {
 
         // Habilitar la cuenta del usuario
         User usuario = tokenVerificacion.getUsuario();
-        usuario.setEnable(true);
+        usuario.setHabilitado(true);
         usuarioRepository.save(usuario);
 
         return ResponseEntity.ok("Cuenta verificada correctamente");

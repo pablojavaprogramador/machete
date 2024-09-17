@@ -46,7 +46,7 @@ public class AuthenticationService {
         user.setUsuario(input.getUsuario());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
-        user.setEnable(false);
+        user.setHabilitado(false);
          User usuario = userRepository.save(user);
         
         // Generar un token de verificación

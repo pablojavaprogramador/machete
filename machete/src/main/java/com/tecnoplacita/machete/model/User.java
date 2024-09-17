@@ -15,9 +15,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-@Entity(name="user_app")
-
+@Entity(name = "user_app")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
@@ -31,23 +31,11 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
-    
-    @Column(nullable=true)
-    public boolean enable;
 
-    
+    @Column(name = "habilitado", nullable = false)
+    private boolean habilitado; // Nombre cambiado para ser consistente
 
-	public boolean isEnable() {
-		return enable;
-	}
-
-	public void setEnable(boolean enable) {
-		this.enable = enable;
-	}
-
-
-
-	@CreationTimestamp
+    @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
 
@@ -57,7 +45,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(); // Puedes añadir roles o permisos aquí si es necesario
     }
 
     @Override
@@ -67,78 +55,78 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return true; // Añadir lógica si es necesario
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return true; // Añadir lógica si es necesario
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return true; // Añadir lógica si es necesario
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return habilitado; // Usa 'habilitado' en lugar de 'enabled'
     }
 
-	public Integer getId() {
-		return id;
-	}
+    // Getters y setters
+    public Integer getId() {
+        return id;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
+    public String getUsuario() {
+        return usuario;
+    }
 
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
 
-	public String getUsuario() {
-		return usuario;
-	}
+    public String getEmail() {
+        return email;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setUsuario(String usuario) {
-		this.usuario = usuario;
-	}
+    public String getPassword() {
+        return password;
+    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public boolean isHabilitado() { // Cambiado a 'habilitado'
+        return habilitado;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setHabilitado(boolean habilitado) { // Cambiado a 'habilitado'
+        this.habilitado = habilitado;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public Date getCreatedAt() {
+        return createdAt;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 
-	public Date getCreatedAt() {
-		return createdAt;
-	}
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
 
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public Date getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-
-
-    
-    
-    
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

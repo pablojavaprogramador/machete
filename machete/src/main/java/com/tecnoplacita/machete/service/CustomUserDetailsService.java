@@ -1,5 +1,4 @@
 package com.tecnoplacita.machete.service;
-
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -20,10 +19,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByEmail(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
+        Optional<User> userOptional = userRepository.findByEmail(username);
+        if (!userOptional.isPresent()) {
+            throw new UsernameNotFoundException("Usuario no encontrado");
         }
-        return new org.springframework.security.core.userdetails.User(user.get().getUsername(), user.get().getPassword(), new ArrayList<>());
+
+        User user = userOptional.get();
+        
+        // Verifica el estado habilitado del usuario
+        if (!user.isEnabled()) {
+            throw new UsernameNotFoundException("Favor de verificar el Correo");
+        }
+
+        return new org.springframework.security.core.userdetails.User(
+            user.getUsername(), 
+            user.getPassword(), 
+            new ArrayList<>()
+        );
     }
 }
