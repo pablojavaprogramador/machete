@@ -32,7 +32,7 @@ public class TokenVerificacion {
 	public TokenVerificacion(String token, User usuario) {
         this.token = token;
         this.usuario = usuario;
-        this.fechaExpiracion = LocalDateTime.now().plusHours(24); 
+        this.fechaExpiracion = LocalDateTime.now().plusMinutes(5);
     }
 
 	public Long getId() {

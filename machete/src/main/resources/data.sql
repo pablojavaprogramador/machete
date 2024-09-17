@@ -14,5 +14,6 @@ INSERT INTO notification (message) VALUES ('Your profile has been updated.');
 INSERT INTO profile (username, full_name, email) VALUES ('john_doe', 'John Doe', 'john.doe@example.com');
 INSERT INTO profile (username, full_name, email) VALUES ('jane_smith', 'Jane Smith', 'jane.smith@example.com');
 
-INSERT INTO user_app (full_name, email, password, created_at, updated_at)
-VALUES ('John Doe', 'john.doe@example.com', 'password123', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- Inserta un usuario de ejemplo
+INSERT INTO user_app (usuario, email, password, habilitado, aceptacion_aviso_privacidad)
+VALUES ('testuser', 'testuser@example.com', 'passwordhashed', true, true);

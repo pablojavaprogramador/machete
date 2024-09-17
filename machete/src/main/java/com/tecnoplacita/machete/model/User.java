@@ -18,7 +18,12 @@ import jakarta.persistence.Id;
 @Entity(name = "user_app")
 public class User implements UserDetails {
 
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     private Integer id;
@@ -33,7 +38,11 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "habilitado", nullable = false)
-    private boolean habilitado; // Nombre cambiado para ser consistente
+    private boolean habilitado;
+
+    @Column(name = "aviso_privacidad_aceptado", nullable = false)
+    private boolean avisoPrivacidadAceptado;
+
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -45,7 +54,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Puedes añadir roles o permisos aquí si es necesario
+        return List.of();
     }
 
     @Override
@@ -55,25 +64,25 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Añadir lógica si es necesario
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Añadir lógica si es necesario
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Añadir lógica si es necesario
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return habilitado; // Usa 'habilitado' en lugar de 'enabled'
+        return habilitado;
     }
 
-    // Getters y setters
+    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -106,13 +115,23 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public boolean isHabilitado() { // Cambiado a 'habilitado'
+    public boolean isHabilitado() {
         return habilitado;
     }
 
-    public void setHabilitado(boolean habilitado) { // Cambiado a 'habilitado'
+    public void setHabilitado(boolean habilitado) {
         this.habilitado = habilitado;
     }
+
+    // Getters y setters
+    public boolean isAvisoPrivacidadAceptado() {
+        return avisoPrivacidadAceptado;
+    }
+
+    public void setAvisoPrivacidadAceptado(boolean avisoPrivacidadAceptado) {
+        this.avisoPrivacidadAceptado = avisoPrivacidadAceptado;
+    }
+
 
     public Date getCreatedAt() {
         return createdAt;

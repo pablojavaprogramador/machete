@@ -1,5 +1,6 @@
 package com.tecnoplacita.machete.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +42,19 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
-    	
+    	  if (!input.isAceptoAvisoPrivacidad()) {
+    	        throw new IllegalArgumentException("Debe aceptar el aviso de privacidad.");
+    	    }
+    	  
         User user = new User();
         user.setUsuario(input.getUsuario());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setHabilitado(false);
-         User usuario = userRepository.save(user);
-        
+        user.setAvisoPrivacidadAceptado(input.isAceptoAvisoPrivacidad());
+
+        User usuario = userRepository.save(user);
+
         // Generar un token de verificación
         String token = UUID.randomUUID().toString();
         TokenVerificacion tokenVerificacion = new TokenVerificacion(token, usuario);
@@ -56,10 +62,9 @@ public class AuthenticationService {
 
         // Enviar correo de verificación
         enviarCorreoVerificacion(usuario.getEmail(), token);
-        
+
         return usuario;
     }
-
     private void enviarCorreoVerificacion(String email, String token) {
         String enlaceVerificacion = "http://192.168.1.11:9090/verificar?token=" + token;
         SimpleMailMessage mensaje = new SimpleMailMessage();
@@ -80,4 +85,47 @@ public class AuthenticationService {
         return userRepository.findByEmail(input.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found")); // Proveedor de excepción
     }
+    
+    
+    
+    public boolean sendPasswordResetEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        String token = UUID.randomUUID().toString();
+        TokenVerificacion tokenVerificacion = new TokenVerificacion(token, user);
+        tokenVerificacionRepository.save(tokenVerificacion);
+
+        String enlaceRestablecimiento = "http://192.168.1.11:9090/auth/confirm-reset?token=" + token;
+        SimpleMailMessage mensaje = new SimpleMailMessage();
+        mensaje.setTo(email);
+        mensaje.setSubject("Restablecimiento de contraseña");
+        mensaje.setText("Haga clic en el siguiente enlace para restablecer su contraseña: " + enlaceRestablecimiento);
+        javaMailSender.send(mensaje);
+
+        return true;
+    }
+
+    public boolean resetPassword(String token, String newPassword) {
+        TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token);
+
+        if (tokenVerificacion == null || tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        User user = tokenVerificacion.getUsuario();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Opcional: Eliminar el token después de usarlo
+        tokenVerificacionRepository.delete(tokenVerificacion);
+
+        return true;
+    }
+    
+    
 }
