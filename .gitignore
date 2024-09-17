@@ -1,0 +1,60 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Ignorar archivos de configuración con datos sensibles
+src/main/resources/application.properties
+src/main/resources/application.yml
+
+# Ignorar archivos de configuración para entornos específicos
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-test.properties
+
+# Ignorar archivos de configuración generales
+src/main/resources/*.properties
+src/main/resources/*.yml
+
+# Ignorar archivos de log
+logs/
+*.log
+
+# Ignorar archivos de compilación y dependencias
+target/
+*.jar
+*.war
+*.ear
+.mvn/
+.gradle/
+build/
+
