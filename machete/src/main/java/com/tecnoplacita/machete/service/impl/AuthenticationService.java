@@ -1,6 +1,7 @@
 package com.tecnoplacita.machete.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,15 +90,27 @@ public class AuthenticationService {
     
     
     public boolean sendPasswordResetEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElse(null);
+        User user = userRepository.findByEmail(email).orElse(null);
 
         if (user == null) {
             return false;
         }
 
         String token = UUID.randomUUID().toString();
-        TokenVerificacion tokenVerificacion = new TokenVerificacion(token, user);
+        Optional<TokenVerificacion> optionalTokenVerificacion = tokenVerificacionRepository.findByUsuarioId(user.getId());
+
+        TokenVerificacion tokenVerificacion;
+        if (optionalTokenVerificacion.isPresent()) {
+            // Si el Optional contiene un valor, obtén el TokenVerificacion existente
+            tokenVerificacion = optionalTokenVerificacion.get();
+            tokenVerificacion.setToken(token); // Actualiza el token
+            tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Actualiza la fecha de expiración
+        } else {
+            // Si el Optional está vacío, crea un nuevo TokenVerificacion
+            tokenVerificacion = new TokenVerificacion(token, user);
+            tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Establece la fecha de expiración
+        }
+
         tokenVerificacionRepository.save(tokenVerificacion);
 
         String enlaceRestablecimiento = "http://192.168.1.11:9090/auth/confirm-reset?token=" + token;
@@ -109,6 +122,7 @@ public class AuthenticationService {
 
         return true;
     }
+
 
     public boolean resetPassword(String token, String newPassword) {
         TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token);

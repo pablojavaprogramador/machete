@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tecnoplacita.machete.dto.ApiResponse;
 import com.tecnoplacita.machete.dto.LoginResponse;
 import com.tecnoplacita.machete.dto.LoginUserDto;
 import com.tecnoplacita.machete.dto.PasswordResetConfirmationDto;
@@ -51,24 +52,42 @@ public class AuthenticationController {
     
     
     @PostMapping("/reset-password")
-    public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDto request) {
+    public ResponseEntity<ApiResponse> requestPasswordReset(@RequestBody PasswordResetRequestDto request) {
+        // Inicializar la respuesta
+        ApiResponse respuesta = new ApiResponse(false, null);
+        
+        // Enviar el correo para restablecer la contraseña
         boolean sent = authenticationService.sendPasswordResetEmail(request.getEmail());
 
         if (sent) {
-            return ResponseEntity.ok("Se ha enviado un correo para restablecer la contraseña.");
+            // Configurar respuesta exitosa
+            respuesta.setSuccess(true);
+            respuesta.setMessage("Se ha enviado un correo para restablecer la contraseña.");
+            return ResponseEntity.ok(respuesta);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Correo electrónico no encontrado.");
+            // Configurar respuesta fallida
+            respuesta.setSuccess(false);
+            respuesta.setMessage("Correo electrónico no encontrado.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
         }
     }
 
-    @PostMapping("/confirm-reset")
-    public ResponseEntity<String> confirmPasswordReset(@RequestBody PasswordResetConfirmationDto request) {
-        boolean successful = authenticationService.resetPassword(request.getToken(), request.getNewPassword());
 
+    @PostMapping("/confirm-reset")
+    public ResponseEntity<ApiResponse> confirmPasswordReset(@RequestBody PasswordResetConfirmationDto request) {
+        boolean successful = authenticationService.resetPassword(request.getToken(), request.getNewPassword());
+        ApiResponse respuesta = new ApiResponse(false, null);
         if (successful) {
-            return ResponseEntity.ok("Contraseña restablecida correctamente.");
+           
+            respuesta.setSuccess(true);
+            respuesta.setMessage("Contraseña restablecida correctamente.");
+            return ResponseEntity.ok(respuesta);
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido o expirado.");
+           
+            respuesta.setSuccess(false);
+            respuesta.setMessage("Token inválido o expirado.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
+            
         }
     }
 }

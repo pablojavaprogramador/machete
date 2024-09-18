@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tecnoplacita.machete.dto.ApiResponse;
 import com.tecnoplacita.machete.model.TokenVerificacion;
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.TokenVerificacionRepository;
@@ -24,16 +25,23 @@ public class VerificacionController {
     private UserRepository usuarioRepository;
 
     @GetMapping("/verificar")
-    public ResponseEntity<String> verificarCuenta(@RequestParam("token") String token) {
+    public ResponseEntity<ApiResponse> verificarCuenta(@RequestParam("token") String token) {
         TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token);
 
+        ApiResponse respuesta=new ApiResponse(false, null);
         if (tokenVerificacion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token inválido");
+         
+            respuesta.setSuccess(false);
+            respuesta.setMessage("Token inválido");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
         }
 
         // Verificar si el token ha expirado
         if (tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token expirado");
+        
+            respuesta.setSuccess(false);
+            respuesta.setMessage("Token expirado");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
         }
 
         // Habilitar la cuenta del usuario
@@ -41,7 +49,11 @@ public class VerificacionController {
         usuario.setHabilitado(true);
         usuarioRepository.save(usuario);
 
-        return ResponseEntity.ok("Cuenta verificada correctamente");
+        respuesta.setSuccess(true);
+        respuesta.setMessage("Cuenta verificada correctamente");
+        return ResponseEntity.ok(respuesta);
+        
+      
     }
 }
 

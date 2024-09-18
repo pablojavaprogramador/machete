@@ -11,6 +11,14 @@ CREATE TABLE user_app (
 );
 
 
+CREATE TABLE token_verificacion (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha_expiracion TIMESTAMP,
+    token VARCHAR(255),
+    usuario_id BIGINT,
+    CONSTRAINT CONSTRAINT_INDEX_3 UNIQUE (usuario_id)
+);
+
 
 
 -- Crear tabla Community
