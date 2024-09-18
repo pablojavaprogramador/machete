@@ -5,8 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,127 +19,157 @@ import com.tecnoplacita.machete.model.TokenVerificacion;
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.TokenVerificacionRepository;
 import com.tecnoplacita.machete.repository.UserRepository;
+import com.tecnoplacita.machete.utils.TokenGenerator;
+
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class AuthenticationService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private TokenVerificacionRepository tokenVerificacionRepository;
+	@Autowired
+	private TokenVerificacionRepository tokenVerificacionRepository;
 
-    @Autowired
-    private JavaMailSender javaMailSender;
-    
-    public AuthenticationService(
-        UserRepository userRepository,
-        AuthenticationManager authenticationManager,
-        PasswordEncoder passwordEncoder
-    ) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+	@Autowired
+	private JavaMailSender javaMailSender;
 
-    public User signup(RegisterUserDto input) {
-    	  if (!input.isAceptoAvisoPrivacidad()) {
-    	        throw new IllegalArgumentException("Debe aceptar el aviso de privacidad.");
-    	    }
-    	  
-        User user = new User();
-        user.setUsuario(input.getUsuario());
-        user.setEmail(input.getEmail());
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        user.setHabilitado(false);
-        user.setAvisoPrivacidadAceptado(input.isAceptoAvisoPrivacidad());
+	public AuthenticationService(UserRepository userRepository, AuthenticationManager authenticationManager,
+			PasswordEncoder passwordEncoder) {
+		this.authenticationManager = authenticationManager;
+		this.userRepository = userRepository;
+		this.passwordEncoder = passwordEncoder;
+	}
 
-        User usuario = userRepository.save(user);
+	public User signup(RegisterUserDto input) {
+		if (!input.isAceptoAvisoPrivacidad()) {
+			throw new IllegalArgumentException("Debe aceptar el aviso de privacidad.");
+		}
 
-        // Generar un token de verificación
-        String token = UUID.randomUUID().toString();
-        TokenVerificacion tokenVerificacion = new TokenVerificacion(token, usuario);
-        tokenVerificacionRepository.save(tokenVerificacion);
+		User user = new User();
+		user.setUsuario(input.getUsuario());
+		user.setEmail(input.getEmail());
+		user.setPassword(passwordEncoder.encode(input.getPassword()));
+		user.setHabilitado(false);
+		user.setAvisoPrivacidadAceptado(input.isAceptoAvisoPrivacidad());
 
-        // Enviar correo de verificación
-        enviarCorreoVerificacion(usuario.getEmail(), token);
+		User usuario = userRepository.save(user);
 
-        return usuario;
-    }
-    private void enviarCorreoVerificacion(String email, String token) {
-        String enlaceVerificacion = "http://192.168.1.11:9090/verificar?token=" + token;
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setTo(email);
-        mensaje.setSubject("Verificación de cuenta");
-        mensaje.setText("Haga clic en el siguiente enlace para verificar su cuenta: " + enlaceVerificacion);
-        javaMailSender.send(mensaje);
-    }
-    
-    public User authenticate(LoginUserDto input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
-        );
+		// Generar un token de verificación
+		TokenGenerator tokenDigitos = new TokenGenerator();
 
-        return userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found")); // Proveedor de excepción
-    }
-    
-    
-    
-    public boolean sendPasswordResetEmail(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
+		String token = tokenDigitos.generateToken();
 
-        if (user == null) {
-            return false;
-        }
+		TokenVerificacion tokenVerificacion = new TokenVerificacion(token, usuario);
+		tokenVerificacionRepository.save(tokenVerificacion);
 
-        String token = UUID.randomUUID().toString();
-        Optional<TokenVerificacion> optionalTokenVerificacion = tokenVerificacionRepository.findByUsuarioId(user.getId());
+		// Enviar correo de verificación
+		enviarCorreoVerificacion(usuario.getEmail(), token);
 
-        TokenVerificacion tokenVerificacion;
-        if (optionalTokenVerificacion.isPresent()) {
-            // Si el Optional contiene un valor, obtén el TokenVerificacion existente
-            tokenVerificacion = optionalTokenVerificacion.get();
-            tokenVerificacion.setToken(token); // Actualiza el token
-            tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Actualiza la fecha de expiración
-        } else {
-            // Si el Optional está vacío, crea un nuevo TokenVerificacion
-            tokenVerificacion = new TokenVerificacion(token, user);
-            tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Establece la fecha de expiración
-        }
+		return usuario;
+	}
 
-        tokenVerificacionRepository.save(tokenVerificacion);
+	private void enviarCorreoVerificacion(String email, String token) {
+		try {
+			MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        String enlaceRestablecimiento = "http://192.168.1.11:9090/auth/confirm-reset?token=" + token;
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setTo(email);
-        mensaje.setSubject("Restablecimiento de contraseña");
-        mensaje.setText("Haga clic en el siguiente enlace para restablecer su contraseña: " + enlaceRestablecimiento);
-        javaMailSender.send(mensaje);
+			String enlaceVerificacion = "http://192.168.1.11:9090/verificar?token=" + token;
+			String mensajeHtml = "<html>" + "<body>" + "<h2>¡Verifica tu cuenta!</h2>"
+					+ "<p>Gracias por registrarte en nuestra aplicación. Para completar el proceso de registro, haz clic en el siguiente enlace o ingresa el código de seguridad en la aplicación:</p>"
+					+ "<p><strong>Código de seguridad: " + token + "</strong></p>" + "<a href='" + enlaceVerificacion
+					+ "'>Verificar cuenta</a>" + "<br><br>"
+					+ "<p><em>Este código es único y no debe compartirse con nadie. Si no solicitaste este registro, ignora este mensaje.</em></p>"
+					+ "<p>¡Bienvenido a [Nombre de la Aplicación]!</p>"
+					+ "<p>Saludos,<br>El equipo de [Nombre de la Aplicación]</p>" + "</body>" + "</html>";
 
-        return true;
-    }
+			helper.setTo(email);
+			helper.setSubject("Verifica tu cuenta con el código de seguridad");
+			helper.setText(mensajeHtml, true); // true indica que es contenido HTML
+			javaMailSender.send(mimeMessage);
+		} catch (Exception e) {
+			e.printStackTrace(); // Manejo de errores (puedes agregar logueo aquí)
+		}
+	}
 
+	public User authenticate(LoginUserDto input) {
+		authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword()));
 
-    public boolean resetPassword(String token, String newPassword) {
-        TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token);
+		return userRepository.findByEmail(input.getEmail())
+				.orElseThrow(() -> new UsernameNotFoundException("User not found")); // Proveedor de excepción
+	}
 
-        if (tokenVerificacion == null || tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
-            return false;
-        }
+	public boolean sendPasswordResetEmail(String email) {
+		User user = userRepository.findByEmail(email).orElse(null);
 
-        User user = tokenVerificacion.getUsuario();
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+		if (user == null) {
+			return false;
+		}
 
-        // Opcional: Eliminar el token después de usarlo
-        tokenVerificacionRepository.delete(tokenVerificacion);
+		TokenGenerator tokenDigitos = new TokenGenerator();
 
-        return true;
-    }
-    
-    
+		String token = tokenDigitos.generateToken();
+		Optional<TokenVerificacion> optionalTokenVerificacion = tokenVerificacionRepository
+				.findByUsuarioId(user.getId());
+
+		TokenVerificacion tokenVerificacion;
+		if (optionalTokenVerificacion.isPresent()) {
+			// Si el Optional contiene un valor, obtén el TokenVerificacion existente
+			tokenVerificacion = optionalTokenVerificacion.get();
+			tokenVerificacion.setToken(token); // Actualiza el token
+			tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Actualiza la fecha de expiración
+		} else {
+			// Si el Optional está vacío, crea un nuevo TokenVerificacion
+			tokenVerificacion = new TokenVerificacion(token, user);
+			tokenVerificacion.setFechaExpiracion(LocalDateTime.now().plusHours(1)); // Establece la fecha de expiración
+		}
+
+		tokenVerificacionRepository.save(tokenVerificacion);
+
+		// Enviar correo de recuperación
+		enviarCorreoRecuperacion(user.getEmail(), token);
+
+		return true;
+	}
+
+	private void enviarCorreoRecuperacion(String email, String token) {
+		try {
+			MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+			String enlaceRestablecimiento = "http://192.168.1.11:9090/auth/confirm-reset?token=" + token;
+			String mensajeHtml = "<html>" + "<body>" + "<h2>Recupera tu cuenta</h2>"
+					+ "<p>Has solicitado recuperar tu cuenta. Para completar el proceso, haz clic en el siguiente enlace o ingresa el código de seguridad en la aplicación:</p>"
+					+ "<p><strong>Código de seguridad: " + token + "</strong></p>" + "<a href='"
+					+ enlaceRestablecimiento + "'>Restablecer contraseña</a>" + "<br><br>"
+					+ "<p><em>Este código es único y no debe compartirse con nadie. Si no solicitaste la recuperación de cuenta, ignora este mensaje.</em></p>"
+					+ "<p>Saludos,<br>El equipo de [Nombre de la Aplicación]</p>" + "</body>" + "</html>";
+
+			helper.setTo(email);
+			helper.setSubject("Recupera tu cuenta con el código de seguridad");
+			helper.setText(mensajeHtml, true); // true indica que es contenido HTML
+			javaMailSender.send(mimeMessage);
+		} catch (Exception e) {
+			e.printStackTrace(); // Manejo de errores
+		}
+	}
+
+	public boolean resetPassword(String token, String newPassword) {
+		TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token);
+
+		if (tokenVerificacion == null || tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+			return false;
+		}
+
+		User user = tokenVerificacion.getUsuario();
+		user.setPassword(passwordEncoder.encode(newPassword));
+		userRepository.save(user);
+
+		// Opcional: Eliminar el token después de usarlo
+		tokenVerificacionRepository.delete(tokenVerificacion);
+
+		return true;
+	}
 }
