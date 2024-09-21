@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
+	@ExceptionHandler(Exception.class)
     public ProblemDetail handleException(Exception ex) {
         ex.printStackTrace();
         ProblemDetail errorDetail;
@@ -27,7 +27,16 @@ public class GlobalExceptionHandler {
             errorDetail.setProperty("description", "Error en el análisis del JSON: " + ex.getMessage());
             return errorDetail;
 
-        } else if (ex instanceof InvalidFormatException) {
+        } else if (ex instanceof CorreoNoEncontrado) {
+        	 errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+             errorDetail.setDetail("Correo no encontrado");
+             errorDetail.setProperty("description",  ex.getMessage().toString());
+             return errorDetail;
+
+        	
+        }
+        	
+        	else if (ex instanceof InvalidFormatException) {
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
             errorDetail.setDetail("Formato inválido");
             errorDetail.setProperty("description", "Error en el formato de datos: " + ex.getMessage());
@@ -51,7 +60,15 @@ public class GlobalExceptionHandler {
             errorDetail.setProperty("description", ex.getMessage().toString());
             return errorDetail;
 
-        } else if (ex instanceof HttpRequestMethodNotSupportedException) {
+        } else if (ex instanceof TokenInvalidResetException) {
+        	errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+            errorDetail.setDetail("El token proporcionado es inválido");
+            errorDetail.setProperty("description", ex.getMessage().toString());
+            return errorDetail;
+        	
+        }
+        	
+        	else  if (ex instanceof HttpRequestMethodNotSupportedException) {
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage());
             errorDetail.setDetail("Método no permitido");
             errorDetail.setProperty("description", "El método HTTP no es compatible con esta solicitud: " + ex.getMessage());

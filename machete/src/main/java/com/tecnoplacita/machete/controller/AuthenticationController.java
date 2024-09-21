@@ -14,6 +14,7 @@ import com.tecnoplacita.machete.dto.LoginUserDto;
 import com.tecnoplacita.machete.dto.PasswordResetConfirmationDto;
 import com.tecnoplacita.machete.dto.PasswordResetRequestDto;
 import com.tecnoplacita.machete.dto.RegisterUserDto;
+import com.tecnoplacita.machete.exceptions.CorreoNoEncontrado;
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.service.JwtService;
 import com.tecnoplacita.machete.service.impl.AuthenticationService;
@@ -52,7 +53,7 @@ public class AuthenticationController {
     
     
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse> requestPasswordReset(@RequestBody PasswordResetRequestDto request) {
+    public ResponseEntity<ApiResponse> requestPasswordReset(@RequestBody PasswordResetRequestDto request) throws Exception {
         // Inicializar la respuesta
         ApiResponse respuesta = new ApiResponse(false, null);
         
@@ -66,15 +67,14 @@ public class AuthenticationController {
             return ResponseEntity.ok(respuesta);
         } else {
             // Configurar respuesta fallida
-            respuesta.setSuccess(false);
-            respuesta.setMessage("Correo electrónico no encontrado.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
+        	throw new Exception();
+           
         }
     }
 
 
     @PostMapping("/confirm-reset")
-    public ResponseEntity<ApiResponse> confirmPasswordReset(@RequestBody PasswordResetConfirmationDto request) {
+    public ResponseEntity<ApiResponse> confirmPasswordReset(@RequestBody PasswordResetConfirmationDto request) throws Exception {
         boolean successful = authenticationService.resetPassword(request.getToken(), request.getNewPassword());
         ApiResponse respuesta = new ApiResponse(false, null);
         if (successful) {
@@ -84,9 +84,7 @@ public class AuthenticationController {
             return ResponseEntity.ok(respuesta);
         } else {
            
-            respuesta.setSuccess(false);
-            respuesta.setMessage("Token inválido o expirado.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
+        	 throw new Exception();
             
         }
     }
