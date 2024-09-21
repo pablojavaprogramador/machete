@@ -1,6 +1,6 @@
 package com.tecnoplacita.machete.service.impl;
 
-import com.tecnoplacita.machete.exceptions.EmailAlreadyExistsException;
+
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.UserRepository;
 import com.tecnoplacita.machete.service.UserService;
@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User save(User user) {
     	  if (userRepository.existsByEmail(user.getEmail())) {
-              throw new EmailAlreadyExistsException("El correo electrónico ya está registrado.");
+             // throw new Exception("El correo electrónico ya está registrado.");
           }
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Codificar la contraseña antes de guardarla
         return userRepository.save(user);

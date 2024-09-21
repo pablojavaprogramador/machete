@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tecnoplacita.machete.dto.ApiResponse;
 import com.tecnoplacita.machete.dto.ValidacionEmailRequestDto;
+import com.tecnoplacita.machete.exceptions.TokenInvalidException;
 import com.tecnoplacita.machete.model.TokenVerificacion;
 import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.TokenVerificacionRepository;
@@ -28,23 +29,16 @@ public class VerificacionController {
     private UserRepository usuarioRepository;
 
     @PostMapping("/verificar")
-    public ResponseEntity<ApiResponse> verificarCuenta(@RequestBody ValidacionEmailRequestDto token) {
+    public ResponseEntity<ApiResponse> verificarCuenta(@RequestBody ValidacionEmailRequestDto token) throws TokenInvalidException {
         TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token.getToken().toString());
 
-        ApiResponse respuesta=new ApiResponse(false, null);
         if (tokenVerificacion == null) {
-         
-            respuesta.setSuccess(false);
-            respuesta.setMessage("Token inválido");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
+            throw new TokenInvalidException("Token inválido");
         }
 
         // Verificar si el token ha expirado
         if (tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
-        
-            respuesta.setSuccess(false);
-            respuesta.setMessage("Token expirado");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
+            throw new TokenInvalidException("Token expirado");
         }
 
         // Habilitar la cuenta del usuario
@@ -52,11 +46,9 @@ public class VerificacionController {
         usuario.setHabilitado(true);
         usuarioRepository.save(usuario);
 
-        respuesta.setSuccess(true);
-        respuesta.setMessage("Cuenta verificada correctamente");
+        ApiResponse respuesta = new ApiResponse(true, "Cuenta verificada correctamente");
         return ResponseEntity.ok(respuesta);
-        
-      
     }
+
 }
 
