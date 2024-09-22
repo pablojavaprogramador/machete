@@ -40,6 +40,10 @@ public class User implements UserDetails {
     @Column(name = "habilitado", nullable = false)
     private boolean habilitado;
 
+    @Column(name = "ispremium", nullable = true)
+    private boolean isPremium;
+    
+    
     @Column(name = "aviso_privacidad_aceptado", nullable = false)
     private boolean avisoPrivacidadAceptado;
 
@@ -76,8 +80,18 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
+    
+    
 
-    @Override
+    public boolean isPremium() {
+		return isPremium;
+	}
+
+	public void setPremium(boolean isPremium) {
+		this.isPremium = isPremium;
+	}
+
+	@Override
     public boolean isEnabled() {
         return habilitado;
     }
