@@ -6,6 +6,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +30,18 @@ public class GlobalExceptionHandler {
 			errorDetail.setProperty("description", "Error en el análisis del JSON: " + ex.getMessage());
 			return errorDetail;
 
+		} else if (ex instanceof UsernameNotFoundException) {
+			
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+			errorDetail.setDetail("No Encontrado");
+			errorDetail.setProperty("description", ex.getMessage().toString());
+			return errorDetail;
+
+		} else if (ex instanceof ResourceNotFoundException) {
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+			errorDetail.setDetail("Verbo No Encontrado");
+			errorDetail.setProperty("description", ex.getMessage().toString());
+			return errorDetail;
 		} else if (ex instanceof DisabledException) {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
 			errorDetail.setDetail("Credenciales Inhabilitadas");
@@ -37,7 +50,7 @@ public class GlobalExceptionHandler {
 		} else if (ex instanceof BadCredentialsException) {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
 			errorDetail.setDetail("Credenciales Invalidas");
-			errorDetail.setProperty("description",ex.getMessage().toString());
+			errorDetail.setProperty("description", ex.getMessage().toString());
 			return errorDetail;
 		} else if (ex instanceof CorreoNoEncontrado) {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());

@@ -23,6 +23,28 @@ CREATE TABLE token_verificacion (
 );
 
 
+-- Crear la tabla 'verbs'
+CREATE TABLE verbs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    base_form VARCHAR(50) NOT NULL,
+    third_person VARCHAR(50) NOT NULL,
+    past VARCHAR(50) NOT NULL,
+    past_participle VARCHAR(50) NOT NULL,
+    gerund VARCHAR(50) NOT NULL
+);
+
+-- Crear la tabla 'sentences'
+CREATE TABLE sentences (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tense VARCHAR(50) NOT NULL,
+    type VARCHAR(20) NOT NULL, -- Afirmativo, Interrogativo, Negativo
+    content VARCHAR(255) NOT NULL,
+    figurative_pronunciation VARCHAR(100),
+    verb_id BIGINT,
+    FOREIGN KEY (verb_id) REFERENCES verbs(id) ON DELETE CASCADE
+);
+
+
 
 -- Crear tabla Community
 CREATE TABLE community (
@@ -36,11 +58,17 @@ CREATE TABLE learning (
     title VARCHAR(255) NOT NULL
 );
 
--- Crear tabla Notification
+
+-- Crear tabla Notification con campos adicionales
 CREATE TABLE notification (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    message TEXT NOT NULL
-);
+    message VARCHAR(255) DEFAULT NULL,
+    user_id BIGINT NOT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type VARCHAR(50) DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES user_app(id) ON DELETE CASCADE  -- Vinculación con user_app
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Crear tabla Profile
 CREATE TABLE profile (

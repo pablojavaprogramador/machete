@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 import com.tecnoplacita.machete.dto.ApiResponse;
 import com.tecnoplacita.machete.model.Notification;
+import com.tecnoplacita.machete.model.User;
 import com.tecnoplacita.machete.repository.NotificationRepository;
+import com.tecnoplacita.machete.repository.UserRepository;
 import com.tecnoplacita.machete.service.NotificationService;
 
 import java.util.List;
@@ -17,6 +19,8 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationRepository notificationRepository;
 
 
+    @Autowired
+    private UserRepository userRepository; // Repositorio de usuario
 	
 	@Override
 	public List<Notification> getAllNotifications() {
@@ -30,11 +34,10 @@ public class NotificationServiceImpl implements NotificationService {
 		return notificationRepository.findById(id);
 	}
 
-	@Override
 	public Notification createNotification(Notification notification) {
-		
-		return notificationRepository.save(notification);
+	    return notificationRepository.save(notification);
 	}
+
 
 	@Override
 	public Notification updateNotification(Long id ,Notification notification) {

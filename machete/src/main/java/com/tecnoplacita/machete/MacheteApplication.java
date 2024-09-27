@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Service;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.tecnoplacita.machete.exceptions","com.tecnoplacita.machete.security","com.tecnoplacita.machete.controller","com.tecnoplacita.machete.repository","com.tecnoplacita.machete.config","com.tecnoplacita.machete.model","com.tecnoplacita.machete.service", "com.tecnoplacita.machete.config","com.tecnoplacita.machete.utils"})
+@ComponentScan(basePackages = {"com.tecnoplacita.machete.loader","com.tecnoplacita.machete.exceptions","com.tecnoplacita.machete.security","com.tecnoplacita.machete.controller","com.tecnoplacita.machete.repository","com.tecnoplacita.machete.config","com.tecnoplacita.machete.model","com.tecnoplacita.machete.service", "com.tecnoplacita.machete.config","com.tecnoplacita.machete.utils"})
 @EntityScan("com.tecnoplacita.machete.model")
 @ConfigurationPropertiesScan("com.tecnoplacita.machete.config")
 @EnableJpaRepositories("com.tecnoplacita.machete.repository")
