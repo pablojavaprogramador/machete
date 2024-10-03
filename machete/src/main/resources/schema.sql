@@ -12,6 +12,11 @@ CREATE TABLE user_app (
 );
 
 
+CREATE TABLE chat_message_gpt (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT NOT NULL,
+    response TEXT NOT NULL  -- Cambia VARCHAR(255) por TEXT o LONGTEXT
+);
 
 
 CREATE TABLE token_verificacion (

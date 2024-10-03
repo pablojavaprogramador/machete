@@ -19,6 +19,8 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationRepository notificationRepository;
 
 
+    private static final int MAX_NOTIFICATIONS = 20;
+    
     @Autowired
     private UserRepository userRepository; // Repositorio de usuario
 	
@@ -34,10 +36,25 @@ public class NotificationServiceImpl implements NotificationService {
 		return notificationRepository.findById(id);
 	}
 
-	public Notification createNotification(Notification notification) {
-	    return notificationRepository.save(notification);
-	}
+	 public Notification createNotification(Notification notification) {
+	        User user = notification.getUser();
 
+	        // Verificar cuántas notificaciones existen para el usuario
+	        List<Notification> userNotifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
+
+	        // Si excede el límite, eliminar las más antiguas
+	        if (userNotifications.size() >= MAX_NOTIFICATIONS) {
+	            // Determinar cuántas notificaciones eliminar
+	            int excess = userNotifications.size() - MAX_NOTIFICATIONS + 1;
+
+	            // Obtener las más antiguas y eliminarlas
+	            List<Notification> notificationsToDelete = userNotifications.subList(MAX_NOTIFICATIONS - excess, userNotifications.size());
+	            notificationRepository.deleteAll(notificationsToDelete);
+	        }
+
+	        // Guardar la nueva notificación
+	        return notificationRepository.save(notification);
+	    }
 
 	@Override
 	public Notification updateNotification(Long id ,Notification notification) {

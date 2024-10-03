@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.tecnoplacita.machete.dto.ApiResponse;
-import com.tecnoplacita.machete.dto.MessageRequest;
+
 import com.tecnoplacita.machete.model.ChatMessage;
 
 public interface ChatService {
